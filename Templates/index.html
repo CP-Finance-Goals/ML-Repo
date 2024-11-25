@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Price Prediction</title>
+</head>
+<body>
+    <h1>Predict House Price</h1>
+    <form id="predict-form">
+        <label for="city">Pilih Kota:</label>
+        <select name="city" required>
+            <option value="" disabled selected>Select a city</option>
+            <option value="Bekasi">Bekasi</option>
+            <option value="Bogor">Bogor</option>
+            <option value="Depok">Depok</option>
+            <option value="Jakarta Barat">Jakarta Barat</option>
+            <option value="Jakarta Selatan">Jakarta Selatan</option>
+            <option value="Jakarta Utara">Jakarta Utara</option>
+            <option value="Jakarta Timur">Jakarta Timur</option>
+            <option value="Jakarta Pusat">Jakarta Pusat</option>
+            <option value="Tangerang">Tangerang</option>
+        </select><br><br>
+
+        <label for="bedrooms">Jumlah Kamar Tidur:</label>
+        <input type="number" name="bedrooms" required><br><br>
+
+        <label for="bathrooms">Jumlah Kamar Mandi:</label>
+        <input type="number" name="bathrooms" required><br><br>
+
+        <label for="land_size_m2">Ukuran Tanah (m²):</label>
+        <input type="number" name="land_size_m2" required><br><br>
+
+        <label for="building_size_m2">Ukuran Bangunan (m²):</label>
+        <input type="number" name="building_size_m2" required><br><br>
+
+        <label for="electricity">Daya Listrik (Watt):</label>
+        <input type="number" name="electricity" required><br><br>
+
+        <label for="maid_bedrooms">Jumlah Kamar Pembantu:</label>
+        <input type="number" name="maid_bedrooms" required><br><br>
+
+        <label for="floors">Jumlah Lantai:</label>
+        <input type="number" name="floors" required><br><br>
+
+        <button type="submit">Prediksi Harga</button>
+    </form>
+    
+    <div id="result"></div>
+
+    <script>
+        const form = document.getElementById('predict-form');
+        const resultDiv = document.getElementById('result');
+        form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+
+    // Debugging: Log all form data to the console
+    formData.forEach((value, key) => {
+        console.log(`${key}: ${value}`);
+    });
+
+    let isValid = true;
+
+    // Validate input data (checking for negative values)
+    formData.forEach((value, key) => {
+        if (value < 0) {
+            isValid = false;
+            alert(`${key} tidak boleh kurang dari 0`);
+        }
+    });
+
+    if (!isValid) {
+        return;  // Prevent form submission if validation fails
+    }
+
+    try {
+        const response = await fetch('/predict', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (result.predicted_price && result.final_price) {
+            const totalPrice = result.predicted_price + result.final_price;
+            resultDiv.innerHTML = `<p>Predicted Price: Rp ${result.predicted_price.toFixed(2)}</p>
+                <p>Final Price with inflation for the next 20 years: Rp ${result.final_price.toFixed(2)}</p>
+                <p>Total Price: Rp ${totalPrice.toFixed(2)}</p>`;
+        } else {
+            resultDiv.innerHTML = `<p>Error: ${result.error}</p>`;
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        resultDiv.innerHTML = `<p>Fetch error: ${error.message}</p>`;
+    }
+});
+
+    </script>
+</body>
+</html>

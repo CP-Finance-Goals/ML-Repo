@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gadget Recommendation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 30px;
+            color: #333;
+        }
+
+        .form-container {
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container label {
+            font-size: 16px;
+            color: #555;
+        }
+
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .form-container button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .form-container button:hover {
+            background-color: #218838;
+        }
+
+        .result-container {
+            margin-top: 20px;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            margin: 10px 0;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .card p {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .card span {
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rekomendasi Gadget</h1>
+    <div class="form-container">
+        <form id="recommend-form">
+            <label for="budget">Budget:</label>
+            <input type="number" id="budget" name="budget" required placeholder="Masukkan budget Anda">
+            <br><br>
+            <label for="tolerance">Tolerance:</label>
+            <input type="number" id="tolerance" name="tolerance" value="0.1" step="0.01" placeholder="Toleransi harga (%)">
+            <br><br>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <div id="result" class="result-container"></div>
+
+    <script>
+        document.getElementById("recommend-form").addEventListener("submit", async function(event) {
+            event.preventDefault();  // Prevent form from submitting the traditional way
+
+            const budget = document.getElementById("budget").value;
+            const tolerance = document.getElementById("tolerance").value;
+
+            // Prepare the data as JSON
+            const data = {
+                budget: parseFloat(budget),
+                tolerance: parseFloat(tolerance)
+            };
+
+            try {
+                const response = await fetch('/recommend', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'  // Make sure the header is set to JSON
+                    },
+                    body: JSON.stringify(data)  // Convert the data to JSON string
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                if (result.message) {
+                    document.getElementById("result").innerHTML = `<p>${result.message}</p>`;
+                } else {
+                    const resultContainer = document.getElementById("result");
+                    resultContainer.innerHTML = ''; // Clear previous results
+
+                    result.forEach(item => {
+                        const card = document.createElement("div");
+                        card.classList.add("card");
+
+                        card.innerHTML = `
+                            <div>
+                                <h3>${item.Brand}</h3>
+                                <p>Harga: <span>Rp ${item.Price.toLocaleString()}</span></p>
+                                <p>Memori: <span>${item.Memory} GB</span></p>
+                                <p>Penyimpanan: <span>${item.Storage} GB</span></p>
+                            </div>
+                        `;
+                        resultContainer.appendChild(card);
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById("result").innerHTML = "Terjadi kesalahan saat mengirim data.";
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+tensorflow
+pandas
+joblib
+jinja2

@@ -1,20 +1,18 @@
-# Menggunakan image Python resmi sebagai base image
+# Menggunakan image Python resmi
 FROM python:3.9-slim
 
 # Set working directory di dalam container
 WORKDIR /app
 
-# Menyalin file requirements.txt ke dalam container
-COPY requirements.txt /app/
-
-# Install semua dependencies
+# Salin file requirements.txt dan install dependencies
+COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Menyalin semua file aplikasi ke dalam container
-COPY . /app/
+# Salin seluruh kode aplikasi ke dalam container
+COPY . .
 
-# Menyatakan bahwa aplikasi akan berjalan di port 5000
-EXPOSE 5000
+# Tentukan port yang akan digunakan oleh aplikasi
+ENV PORT 8080
 
-# Menjalankan aplikasi Flask
+# Perintah untuk menjalankan aplikasi Flask
 CMD ["python", "app.py"]

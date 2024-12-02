@@ -5,14 +5,14 @@ FROM python:3.9-slim
 WORKDIR /app
 
 # Salin file requirements.txt dan install dependencies
-COPY requirements.txt ./
+COPY requirements.txt ./ 
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Salin seluruh kode aplikasi ke dalam container
+# Salin seluruh kode aplikasi dan file model yang diperlukan
 COPY . .
 
 # Tentukan port yang akan digunakan oleh aplikasi
-ENV PORT 8080
+EXPOSE 5000
 
 # Perintah untuk menjalankan aplikasi Flask
 CMD ["python", "app.py"]

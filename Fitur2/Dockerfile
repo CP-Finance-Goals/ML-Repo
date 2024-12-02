@@ -14,5 +14,5 @@ COPY . .
 # Tentukan port yang akan digunakan oleh aplikasi
 EXPOSE 5000
 
-# Perintah untuk menjalankan aplikasi Flask
-CMD ["python", "app.py"]
+# Perintah untuk menjalankan aplikasi FastAPI menggunakan Uvicorn
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000"]

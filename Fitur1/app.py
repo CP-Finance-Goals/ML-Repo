@@ -5,10 +5,6 @@ import numpy as np
 from tensorflow.keras.models import load_model
 import joblib
 import os
-import locale
-
-# Set locale untuk format Indonesia
-locale.setlocale(locale.LC_ALL, 'id_ID.UTF-8')
 
 app = Flask(__name__)
 CORS(app)  # Menambahkan CORS ke aplikasi Flask
@@ -115,16 +111,9 @@ def predict():
         # Harga akhir setelah inflasi
         final_price = predicted_price * inflation_multiplier
 
-        # Format harga
-        formatted_predicted_price = locale.format_string('Rp %.2f', predicted_price, grouping=True)
-        formatted_final_price = locale.format_string('Rp %.2f', final_price, grouping=True)
-        total_price = predicted_price + final_price
-        formatted_total_price = locale.format_string('Rp %.2f', total_price, grouping=True)
-
         return jsonify({
-            'predicted_inflation': formatted_predicted_price,
-            'predicted_house': formatted_final_price,
-            'total_price': formatted_total_price
+            'predicted_price': predicted_price,
+            'final_price': final_price
         })
 
     except Exception as e:

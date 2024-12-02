@@ -1,6 +1,4 @@
-fastapi
-uvicorn[standard]
+Flask
 tensorflow
 pandas
 joblib
-jinja2

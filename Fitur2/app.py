@@ -1,13 +1,8 @@
 import os
-import uvicorn
 import tensorflow as tf
 import pandas as pd
 import joblib
-from pydantic import BaseModel
-from fastapi import FastAPI, Response, HTTPException
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
-from fastapi import Request
+from flask import Flask, request, jsonify, render_template
 
 # Load model, scaler, dan data
 model = tf.keras.models.load_model('./Model/Gadget_fix.h5')  # Path model
@@ -33,30 +28,27 @@ try:
 except Exception as e:
     print(f"Error loading dataset: {e}")
 
-# Create FastAPI app
-app = FastAPI()
+# Create Flask app
+app = Flask(__name__)
 
-# Set up Jinja2 templates directory
-templates = Jinja2Templates(directory="templates")
-
-# Endpoint untuk menampilkan halaman HTML
-@app.get("/")
-async def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+# Route untuk menampilkan halaman HTML
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 # Endpoint untuk rekomendasi gadget berdasarkan anggaran (budget)
-class RequestData(BaseModel):
-    budget: float
-    tolerance: float = 0.1  # Toleransi harga ±10% secara default
-
-@app.post("/recommend")
-def recommend(req: RequestData, response: Response):
+@app.route('/recommend', methods=['POST'])
+def recommend():
     try:
-        print(f"Received budget: {req.budget}, tolerance: {req.tolerance}")
+        req = request.get_json()
+        budget = req.get('budget')
+        tolerance = req.get('tolerance', 0.1)  # Toleransi harga ±10% secara default
+        
+        print(f"Received budget: {budget}, tolerance: {tolerance}")
         
         # Mendapatkan batas harga minimum dan maksimum berdasarkan anggaran dan toleransi
-        min_price = req.budget * (1 - req.tolerance)
-        max_price = req.budget * (1 + req.tolerance)
+        min_price = budget * (1 - tolerance)
+        max_price = budget * (1 + tolerance)
         print(f"Min price: {min_price}, Max price: {max_price}")
         
         # Filter dataset berdasarkan harga dalam rentang yang diberikan
@@ -64,28 +56,27 @@ def recommend(req: RequestData, response: Response):
         print(f"Recommendations found: {len(recommendations)}")
 
         if recommendations.empty:
-            return {"message": "Tidak ada gadget yang sesuai dengan anggaran Anda."}
+            return jsonify({"message": "Tidak ada gadget yang sesuai dengan anggaran Anda."})
         
         # Sortir berdasarkan kriteria tertentu, misalnya Memori dan Penyimpanan, serta harga
         recommendations = recommendations.sort_values(by=['Memory', 'Storage', 'Price'], ascending=[False, False, True])  # Gantilah jika perlu dengan nama kolom yang benar
         
         # Kembalikan hasil rekomendasi
-        return recommendations[['Brand', 'Price', 'Memory', 'Storage']].to_dict(orient='records')
+        result = recommendations[['Brand', 'Price', 'Memory', 'Storage']].to_dict(orient='records')
+        return jsonify(result)
     
     except KeyError as e:
         print(f"KeyError: {e}")
-        response.status_code = 400
-        return {"error": f"Missing or incorrect key: {e}"}
+        return jsonify({"error": f"Missing or incorrect key: {e}"}), 400
     except Exception as e:
         print(f"Error: {e}")
-        response.status_code = 500
-        return {"error": f"Internal Server Error: {e}"}
+        return jsonify({"error": f"Internal Server Error: {e}"}), 500
 
 # Health check endpoint
-@app.get("/health")
+@app.route('/health', methods=['GET'])
 def health():
-    return {"status": "OK"}
+    return jsonify({"status": "OK"})
 
 # Run the server
 if __name__ == "__main__":
-    uvicorn.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

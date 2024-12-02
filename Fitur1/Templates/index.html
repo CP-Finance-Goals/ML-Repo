@@ -56,16 +56,18 @@
             e.preventDefault();
 
             const formData = new FormData(form);
-
-            // Debugging: Log all form data to the console
+            const formObject = {};
             formData.forEach((value, key) => {
-                console.log(`${key}: ${value}`);
+                formObject[key] = value;
             });
 
             try {
                 const response = await fetch('/predict', {
                     method: 'POST',
-                    body: formData,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formObject),  // Kirim data dalam format JSON
                 });
 
                 if (!response.ok) {
@@ -76,8 +78,8 @@
                 if (result.predicted_price && result.final_price) {
                     const totalPrice = result.predicted_price + result.final_price;
                     resultDiv.innerHTML = `<p>Prediksi Harga: Rp ${result.predicted_price.toFixed(2)}</p>
-                        <p>Harga Akhir dengan Inflasi selama 20 tahun: Rp ${result.final_price.toFixed(2)}</p>
-                        <p>Total Harga: Rp ${totalPrice.toFixed(2)}</p>`;
+                        <p>Total Harga Inflasi: Rp ${result.final_price.toFixed(2)}</p>
+                        <p>Total Harga Rumah dan Inflasi: Rp ${totalPrice.toFixed(2)}</p>`;
                 } else {
                     resultDiv.innerHTML = `<p>Error: ${result.error}</p>`;
                 }

@@ -1,5 +1,7 @@
-flask
+Flask
+Flask-Cors
 tensorflow
 pandas
+numpy
 scikit-learn
 joblib

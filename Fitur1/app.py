@@ -1,49 +1,65 @@
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 import pandas as pd
 import numpy as np
 from tensorflow.keras.models import load_model
 import joblib
+import os
 
 app = Flask(__name__)
+CORS(app)  # Menambahkan CORS ke aplikasi Flask
 
-# Load the models and scalers
-model = load_model("house_fix (1).h5")  # Model prediksi harga rumah
-inflation_model = load_model("inflasi_model.h5")  # Model prediksi inflasi
-scale_num = joblib.load("scale_num.pkl")  # Scaler untuk data numerik
-X_cat_columns = joblib.load("X_cat_columns.pkl")  # Kolom kategori
+# Path untuk file model dan scaler
+MODEL_PATH = "house_fix (1).h5"
+INFLATION_MODEL_PATH = "inflasi_model.h5"
+SCALE_NUM_PATH = "scale_num.pkl"
+X_CAT_COLUMNS_PATH = "X_cat_columns.pkl"
+
+# Pastikan file model dan scaler ada
+if not os.path.exists(MODEL_PATH):
+    raise FileNotFoundError(f"{MODEL_PATH} tidak ditemukan!")
+if not os.path.exists(INFLATION_MODEL_PATH):
+    raise FileNotFoundError(f"{INFLATION_MODEL_PATH} tidak ditemukan!")
+if not os.path.exists(SCALE_NUM_PATH):
+    raise FileNotFoundError(f"{SCALE_NUM_PATH} tidak ditemukan!")
+if not os.path.exists(X_CAT_COLUMNS_PATH):
+    raise FileNotFoundError(f"{X_CAT_COLUMNS_PATH} tidak ditemukan!")
+
+# Load model dan scaler
+model = load_model(MODEL_PATH)
+inflation_model = load_model(INFLATION_MODEL_PATH)
+scale_num = joblib.load(SCALE_NUM_PATH)
+X_cat_columns = joblib.load(X_CAT_COLUMNS_PATH)
 
 # Statistik untuk denormalisasi output prediksi
 y_mean = 2575015770.205576
 y_std = 2378367093.8252316
 
 @app.route('/')
-def home():
-    return render_template('index.html')
+def index():
+    # Mengembalikan halaman HTML
+    return render_template('index.html')  # Pastikan file HTML berada di folder 'templates'
 
-@app.route('/predict', methods=['GET', 'POST'])
+@app.route('/predict', methods=['POST'])
 def predict():
     try:
-        if request.method == 'GET':
-            # Ambil data dari parameter URL
-            city = request.args.get('city', '').strip()
-            bedrooms = int(request.args.get('bedrooms', 0))
-            bathrooms = int(request.args.get('bathrooms', 0))
-            land_size_m2 = int(request.args.get('land_size_m2', 0))
-            building_size_m2 = int(request.args.get('building_size_m2', 0))
-            electricity = int(request.args.get('electricity', 0))
-            maid_bedrooms = int(request.args.get('maid_bedrooms', 0))
-            floors = int(request.args.get('floors', 0))
+        # Ambil data dari JSON (body request)
+        data = request.get_json()
 
-        elif request.method == 'POST':
-            # Ambil data dari form body
-            city = request.form['city'].strip()
-            bedrooms = int(request.form['bedrooms'])
-            bathrooms = int(request.form['bathrooms'])
-            land_size_m2 = int(request.form['land_size_m2'])
-            building_size_m2 = int(request.form['building_size_m2'])
-            electricity = int(request.form['electricity'])
-            maid_bedrooms = int(request.form['maid_bedrooms'])
-            floors = int(request.form['floors'])
+        # Validasi input data
+        required_fields = ['city', 'bedrooms', 'bathrooms', 'land_size_m2', 'building_size_m2', 'electricity', 'maid_bedrooms', 'floors']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Field {field} diperlukan'}), 400
+
+        city = data['city'].strip()
+        bedrooms = int(data['bedrooms'])
+        bathrooms = int(data['bathrooms'])
+        land_size_m2 = int(data['land_size_m2'])
+        building_size_m2 = int(data['building_size_m2'])
+        electricity = int(data['electricity'])
+        maid_bedrooms = int(data['maid_bedrooms'])
+        floors = int(data['floors'])
 
         # Buat DataFrame untuk prediksi
         data_baru = pd.DataFrame({
@@ -59,7 +75,7 @@ def predict():
 
         # Bersihkan string dan pastikan kolom kategori konsisten
         data_baru['city'] = data_baru['city'].str.strip()
-        X_cat_columns_cleaned = [x.strip() for x in X_cat_columns]  # Strip spaces
+        X_cat_columns_cleaned = [x.strip() for x in X_cat_columns]
 
         # One-hot encoding untuk city
         X_cat_baru = pd.get_dummies(data_baru['city'], drop_first=True)
@@ -95,12 +111,14 @@ def predict():
         # Harga akhir setelah inflasi
         final_price = predicted_price * inflation_multiplier
 
-        return jsonify({'predicted_price': predicted_price, 'final_price': final_price})
+        return jsonify({
+            'predicted_price': predicted_price,
+            'final_price': final_price
+        })
 
     except Exception as e:
         print(f"Error occurred: {e}")  # Log error
-        return jsonify({'error': str(e)}), 400
-
+        return jsonify({'error': f'Terjadi kesalahan: {str(e)}'}), 400
 
 if __name__ == '__main__':
     app.run(debug=True)

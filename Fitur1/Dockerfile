@@ -1,20 +1,20 @@
-# Use the official Python image from the Docker Hub
+# Menggunakan image Python resmi sebagai base image
 FROM python:3.9-slim
 
-# Set the working directory in the container
+# Set working directory di dalam container
 WORKDIR /app
 
-# Copy the requirements file into the container
-COPY requirements.txt .
+# Menyalin file requirements.txt ke dalam container
+COPY requirements.txt /app/
 
-# Install the required packages
+# Install semua dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code into the container
-COPY . .
+# Menyalin semua file aplikasi ke dalam container
+COPY . /app/
 
-# Expose the port that the app runs on
+# Menyatakan bahwa aplikasi akan berjalan di port 5000
 EXPOSE 5000
 
-# Command to run the application
+# Menjalankan aplikasi Flask
 CMD ["python", "app.py"]

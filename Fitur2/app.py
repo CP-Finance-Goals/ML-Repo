@@ -3,6 +3,7 @@ import pandas as pd
 import joblib
 from flask import Flask, request, jsonify, render_template
 from tensorflow.keras.models import load_model
+import sklearn
 from sklearn.cluster import KMeans 
 
 # Create Flask app
@@ -138,7 +139,6 @@ def recommend():
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": "Internal server error."}), 500
-
 
 # Run the server
 if __name__ == "__main__":

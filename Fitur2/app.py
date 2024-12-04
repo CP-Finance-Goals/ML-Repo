@@ -1,81 +1,143 @@
 import os
-import tensorflow as tf
 import pandas as pd
 import joblib
 from flask import Flask, request, jsonify, render_template
-
-# Load model, scaler, dan data
-model = tf.keras.models.load_model('./Model/Gadget_fix.h5')  # Path model
-print("Model loaded successfully.")
-
-try:
-    scaler = joblib.load('./Model/scaler.pkl')  # Path scaler
-    print("Scaler loaded successfully.")
-except Exception as e:
-    print(f"Error loading scaler: {e}")
-
-try:
-    kmeans = joblib.load('./Model/kmeans.pkl')  # Path KMeans
-    print("KMeans loaded successfully.")
-except Exception as e:
-    print(f"Error loading KMeans: {e}")
-
-# Load dataset yang sudah diproses sebelumnya
-try:
-    data = pd.read_csv('./Dataset/gadget_clean.csv')  # Pastikan path dataset benar
-    print("Dataset loaded successfully.")
-    data.columns = data.columns.str.strip()  # Remove extra spaces around column names
-except Exception as e:
-    print(f"Error loading dataset: {e}")
+from tensorflow.keras.models import load_model
 
 # Create Flask app
 app = Flask(__name__)
 
-# Route untuk menampilkan halaman HTML
+# Paths for models and scalers
+MODEL_GADGET = "./Model/Gadget_fix.h5"
+MODEL_GAME = "./Model/game_fix.h5"
+MODEL_LUXURY = "./Model/luxury_fix.h5"
+MODEL_MOBIL = "./Model/mobil_fix.h5"
+MODEL_MOTOR = "./Model/sepedamotor_fix.h5"
+KMEANS_GADGET = "./Model/kmeans_gadget.pkl"
+KMEANS_GAME = "./Model/kmeans_game.pkl"
+KMEANS_LUXURY = "./Model/kmeans_luxury.pkl"
+KMEANS_MOBIL = "./Model/kmeans_mobil.pkl"
+KMEANS_MOTOR = "./Model/kmeans_motor.pkl"
+SCALER_GADGET = "./Model/scaler_gadget.pkl"
+SCALER_GAME = "./Model/scaler_game.pkl"
+SCALER_LUXURY = "./Model/scaler_luxury.pkl"
+SCALER_MOBIL = "./Model/scaler_mobil.pkl"
+SCALER_MOTOR = "./Model/scaler_motor.pkl"
+
+# Ensure all required files exist
+required_files = [
+    MODEL_GADGET,
+    MODEL_GAME,
+    MODEL_LUXURY,
+    MODEL_MOBIL,
+    MODEL_MOTOR,
+    KMEANS_GADGET,
+    KMEANS_GAME,
+    KMEANS_LUXURY,
+    KMEANS_MOBIL,
+    KMEANS_MOTOR,
+    SCALER_GADGET,
+    SCALER_GAME,
+    SCALER_LUXURY,
+    SCALER_MOBIL,
+    SCALER_MOTOR,
+]
+
+for file in required_files:
+    if not os.path.exists(file):
+        raise FileNotFoundError(f"{file} not found!")
+
+# Load models, scalers, and kmeans
+model_gadget = load_model(MODEL_GADGET)
+model_game = load_model(MODEL_GAME)
+model_luxury = load_model(MODEL_LUXURY)
+model_mobil = load_model(MODEL_MOBIL)
+model_motor = load_model(MODEL_MOTOR)
+
+kmeans_gadget = joblib.load(KMEANS_GADGET)
+kmeans_game = joblib.load(KMEANS_GAME)
+kmeans_luxury = joblib.load(KMEANS_LUXURY)
+kmeans_mobil = joblib.load(KMEANS_MOBIL)
+kmeans_motor = joblib.load(KMEANS_MOTOR)
+
+scaler_gadget = joblib.load(SCALER_GADGET)
+scaler_game = joblib.load(SCALER_GAME)
+scaler_luxury = joblib.load(SCALER_LUXURY)
+scaler_mobil = joblib.load(SCALER_MOBIL)
+scaler_motor = joblib.load(SCALER_MOTOR)
+
+# Load dataset
+data_gadget = pd.read_csv('./Dataset/gadget_clean.csv')
+data_game = pd.read_csv('./Dataset/game_clean.csv')
+data_luxury = pd.read_csv('./Dataset/luxury_clean.csv')
+data_mobil = pd.read_csv('./Dataset/mobil_clean.csv')
+data_motor = pd.read_csv('./Dataset/motor_clean.csv')
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Endpoint untuk rekomendasi gadget berdasarkan anggaran (budget)
+# Route for health check
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({"status": "OK"})
+
+# Endpoint for product recommendation
 @app.route('/recommend', methods=['POST'])
 def recommend():
     try:
         req = request.get_json()
+        category = req.get('category')
         budget = req.get('budget')
-        tolerance = req.get('tolerance', 0.1)  # Toleransi harga ±10% secara default
-        
-        print(f"Received budget: {budget}, tolerance: {tolerance}")
-        
-        # Mendapatkan batas harga minimum dan maksimum berdasarkan anggaran dan toleransi
-        min_price = budget * (1 - tolerance)
-        max_price = budget * (1 + tolerance)
-        print(f"Min price: {min_price}, Max price: {max_price}")
-        
-        # Filter dataset berdasarkan harga dalam rentang yang diberikan
-        recommendations = data[(data['Price'] >= min_price) & (data['Price'] <= max_price)]  # Pastikan 'Price' adalah nama kolom yang tepat
-        print(f"Recommendations found: {len(recommendations)}")
 
-        if recommendations.empty:
-            return jsonify({"message": "Tidak ada gadget yang sesuai dengan anggaran Anda."})
+        if not category or not budget:
+            return jsonify({"error": "Missing category or budget parameter"}), 400
         
-        # Sortir berdasarkan kriteria tertentu, misalnya Memori dan Penyimpanan, serta harga
-        recommendations = recommendations.sort_values(by=['Memory', 'Storage', 'Price'], ascending=[False, False, True])  # Gantilah jika perlu dengan nama kolom yang benar
+        # Set toleransi 10% dari anggaran
+        tolerance = 0.1
+        min_price = budget * (1 - tolerance)  # Harga minimum 10% lebih rendah dari anggaran
+        max_price = budget * (1 + tolerance)  # Harga maksimum 10% lebih tinggi dari anggaran
+
+        print(f"Min price: {min_price}, Max price: {max_price}")
+
+        # Handle recommendations based on category
+        if category == 'gadget':
+            recommendations = data_gadget[(data_gadget['Price'] >= min_price) & (data_gadget['Price'] <= max_price)]
+            recommendations = recommendations.sort_values(by=['Price'])
+            result = recommendations[['Brand', 'Price', 'Memory', 'Storage']].to_dict(orient='records')
         
-        # Kembalikan hasil rekomendasi
-        result = recommendations[['Brand', 'Price', 'Memory', 'Storage']].to_dict(orient='records')
+        elif category == 'game':
+            recommendations = data_game[(data_game['harga'] >= min_price) & (data_game['harga'] <= max_price)]
+            recommendations = recommendations.sort_values(by=['harga'])
+            result = recommendations[['nama', 'harga', 'tipe_review', 'kata_kunci']].to_dict(orient='records')
+        
+        elif category == 'luxury':
+            recommendations = data_luxury[(data_luxury['price'] >= min_price) & (data_luxury['price'] <= max_price)]
+            recommendations = recommendations.sort_values(by=['price'])
+            result = recommendations[['Brand', 'price', 'item group']].to_dict(orient='records')
+        
+        elif category == 'mobil':
+            recommendations = data_mobil[(data_mobil['price'] >= min_price) & (data_mobil['price'] <= max_price)]
+            recommendations = recommendations.sort_values(by=['price'])
+            result = recommendations[['Brand', 'price', 'transmisi', 'tipe_bbm']].to_dict(orient='records')
+        
+        elif category == 'motor':
+            recommendations = data_motor[(data_motor['harga'] >= min_price) & (data_motor['harga'] <= max_price)]
+            recommendations = recommendations.sort_values(by=['harga'])
+            result = recommendations[['nama', 'harga', 'transmisi', 'bahan_bakar']].to_dict(orient='records')
+
+        else:
+            return jsonify({"error": "Invalid category selected"}), 400
+
+        if not result:
+            return jsonify({"message": "No products found within your budget."})
+
         return jsonify(result)
-    
-    except KeyError as e:
-        print(f"KeyError: {e}")
-        return jsonify({"error": f"Missing or incorrect key: {e}"}), 400
+
     except Exception as e:
         print(f"Error: {e}")
-        return jsonify({"error": f"Internal Server Error: {e}"}), 500
+        return jsonify({"error": "Internal server error."}), 500
 
-# Health check endpoint
-@app.route('/health', methods=['GET'])
-def health():
-    return jsonify({"status": "OK"})
 
 # Run the server
 if __name__ == "__main__":

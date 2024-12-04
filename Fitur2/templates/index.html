@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gadget Recommendation</title>
+    <title>Rekomendasi Produk</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -25,20 +25,25 @@
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box; /* Memastikan padding dan border dihitung dalam lebar elemen */
+            display: flex;
+            flex-direction: column;
         }
 
         .form-container label {
             font-size: 16px;
             color: #555;
+            margin-bottom: 8px;
         }
 
-        .form-container input {
-            width: 100%;
+        .form-container input, .form-container select {
+            width: 100%; /* Menyesuaikan lebar input dengan container */
             padding: 10px;
-            margin: 10px 0;
+            margin-bottom: 15px; /* Menambahkan jarak antar elemen */
             font-size: 16px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            box-sizing: border-box; /* Memastikan padding dihitung dalam lebar elemen */
         }
 
         .form-container button {
@@ -49,6 +54,7 @@
             font-size: 16px;
             border-radius: 4px;
             cursor: pointer;
+            width: 100%; /* Membuat tombol mengisi lebar container */
         }
 
         .form-container button:hover {
@@ -89,19 +95,37 @@
             font-weight: bold;
             color: #007bff;
         }
+
+        /* Responsif untuk layar kecil */
+        @media (max-width: 600px) {
+            .form-container {
+                width: 90%; /* Menyesuaikan lebar form pada layar kecil */
+            }
+
+            .form-container input, .form-container select, .form-container button {
+                width: 100%; /* Membuat elemen-elemen input dan tombol mengisi 100% lebar container */
+            }
+        }
+
     </style>
 </head>
 <body>
-    <h1>Rekomendasi Gadget</h1>
+    <h1>Rekomendasi Produk</h1>
     <div class="form-container">
         <form id="recommend-form">
-            <label for="budget">Budget:</label>
-            <input type="number" id="budget" name="budget" required placeholder="Masukkan budget Anda">
+            <label for="category">Pilih Kategori:</label>
+            <select id="category" name="category" required>
+                <option value="gadget">Gadget</option>
+                <option value="game">Game</option>
+                <option value="luxury">Luxury Brand</option>
+                <option value="mobil">Mobil</option>
+                <option value="motor">Motor</option>
+            </select>
             <br><br>
-            <label for="tolerance">Tolerance:</label>
-            <input type="number" id="tolerance" name="tolerance" value="0.1" step="0.01" placeholder="Toleransi harga (%)">
+            <label for="budget">Anggaran (Rp):</label>
+            <input type="number" id="budget" name="budget" required placeholder="Masukkan anggaran Anda" min="0">
             <br><br>
-            <button type="submit">Submit</button>
+            <button type="submit">Cari Rekomendasi</button>
         </form>
     </div>
 
@@ -111,13 +135,13 @@
         document.getElementById("recommend-form").addEventListener("submit", async function(event) {
             event.preventDefault();  // Prevent form from submitting the traditional way
 
+            const category = document.getElementById("category").value;
             const budget = document.getElementById("budget").value;
-            const tolerance = document.getElementById("tolerance").value;
 
             // Prepare the data as JSON
             const data = {
-                budget: parseFloat(budget),
-                tolerance: parseFloat(tolerance)
+                category: category,
+                budget: parseFloat(budget)  // Send budget as a float number
             };
 
             try {
@@ -144,15 +168,46 @@
                     result.forEach(item => {
                         const card = document.createElement("div");
                         card.classList.add("card");
+                        let cardContent = "";
 
-                        card.innerHTML = `
-                            <div>
+                        // Modify content based on the category selected
+                        if (category === 'gadget') {
+                            cardContent = `
                                 <h3>${item.Brand}</h3>
                                 <p>Harga: <span>Rp ${item.Price.toLocaleString()}</span></p>
                                 <p>Memori: <span>${item.Memory} GB</span></p>
                                 <p>Penyimpanan: <span>${item.Storage} GB</span></p>
-                            </div>
-                        `;
+                            `;
+                        } else if (category === 'game') {
+                            cardContent = `
+                                <h3>${item.nama}</h3>
+                                <p>Harga: <span>Rp ${item.harga.toLocaleString()}</span></p>
+                                <p>Review: <span>${item.tipe_review || 'N/A'}</span></p>
+                                <p>Kata Kunci: <span>${item.kata_kunci || 'N/A'}</span></p>
+                            `;
+                        } else if (category === 'luxury') {
+                            cardContent = `
+                                <h3>${item.Brand}</h3>
+                                <p>Harga: <span>Rp ${item.price.toLocaleString()}</span></p>
+                                <p>Kategori Item: <span>${item['item group']|| 'N/A'}</span></p>
+                            `;
+                        } else if (category === 'mobil') {
+                            cardContent = `
+                                <h3>${item.Brand}</h3>
+                                <p>Harga: <span>Rp ${item.price.toLocaleString()}</span></p>
+                                <p>Transmisi: <span>${item.transmisi || 'N/A'}</span></p>
+                                <p>Tipe BBM: <span>${item.tipe_bbm || 'N/A'}</span></p>
+                            `;
+                        } else if (category === 'motor') {
+                            cardContent = `
+                                <h3>${item.nama}</h3>
+                                <p>Harga: <span>Rp ${item.harga.toLocaleString()}</span></p>
+                                <p>Transmisi: <span>${item.transmisi || 'N/A'}</span></p>
+                                <p>Tipe BBM: <span>${item.bahan_bakar || 'N/A'}</span></p>
+                            `;
+                        }
+
+                        card.innerHTML = cardContent;
                         resultContainer.appendChild(card);
                     });
                 }

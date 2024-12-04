@@ -3,6 +3,7 @@ import pandas as pd
 import joblib
 from flask import Flask, request, jsonify, render_template
 from tensorflow.keras.models import load_model
+from sklearn.cluster import KMeans 
 
 # Create Flask app
 app = Flask(__name__)

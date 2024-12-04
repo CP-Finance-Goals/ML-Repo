@@ -2,3 +2,4 @@ Flask
 tensorflow
 pandas
 joblib
+scikit-learn

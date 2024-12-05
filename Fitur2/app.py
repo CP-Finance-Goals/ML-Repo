@@ -4,10 +4,10 @@ import joblib
 from flask import Flask, request, jsonify, render_template
 from tensorflow.keras.models import load_model
 import sklearn
-from sklearn.cluster import KMeans 
+from sklearn.cluster import KMeans
 
 # Create Flask app
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/Static', static_folder='Static')
 
 # Paths for models and scalers
 MODEL_GADGET = "./Model/Gadget_fix.h5"
@@ -15,16 +15,16 @@ MODEL_GAME = "./Model/game_fix.h5"
 MODEL_LUXURY = "./Model/luxury_fix.h5"
 MODEL_MOBIL = "./Model/mobil_fix.h5"
 MODEL_MOTOR = "./Model/sepedamotor_fix.h5"
-KMEANS_GADGET = "./Model/kmeans_gadget.pkl"
-KMEANS_GAME = "./Model/kmeans_game.pkl"
-KMEANS_LUXURY = "./Model/kmeans_luxury.pkl"
-KMEANS_MOBIL = "./Model/kmeans_mobil.pkl"
-KMEANS_MOTOR = "./Model/kmeans_motor.pkl"
-SCALER_GADGET = "./Model/scaler_gadget.pkl"
-SCALER_GAME = "./Model/scaler_game.pkl"
-SCALER_LUXURY = "./Model/scaler_luxury.pkl"
-SCALER_MOBIL = "./Model/scaler_mobil.pkl"
-SCALER_MOTOR = "./Model/scaler_motor.pkl"
+KMEANS_GADGET = "./Mappings/kmeans_gadget.pkl"
+KMEANS_GAME = "./Mappings/kmeans_game.pkl"
+KMEANS_LUXURY = "./Mappings/kmeans_luxury.pkl"
+KMEANS_MOBIL = "./Mappings/kmeans_mobil.pkl"
+KMEANS_MOTOR = "./Mappings/kmeans_motor.pkl"
+SCALER_GADGET = "./Mappings/scaler_gadget.pkl"
+SCALER_GAME = "./Mappings/scaler_game.pkl"
+SCALER_LUXURY = "./Mappings/scaler_luxury.pkl"
+SCALER_MOBIL = "./Mappings/scaler_mobil.pkl"
+SCALER_MOTOR = "./Mappings/scaler_motor.pkl"
 
 # Ensure all required files exist
 required_files = [
@@ -116,7 +116,9 @@ def recommend():
         elif category == 'luxury':
             recommendations = data_luxury[(data_luxury['price'] >= min_price) & (data_luxury['price'] <= max_price)]
             recommendations = recommendations.sort_values(by=['price'])
-            result = recommendations[['Brand', 'price', 'item group']].to_dict(orient='records')
+            recommendations = recommendations.rename(columns={'item group': 'item_group'})
+            result = recommendations[['Brand', 'price', 'item_group']].to_dict(orient='records')
+
         
         elif category == 'mobil':
             recommendations = data_mobil[(data_mobil['price'] >= min_price) & (data_mobil['price'] <= max_price)]

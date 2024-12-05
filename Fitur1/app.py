@@ -11,9 +11,9 @@ app = Flask(__name__)
 CORS(app)
 
 # Path untuk file model dan scaler
-MODEL_HOUSE_PATH = "./Model/model_h5/house_fix.h5"
-MODEL_INFLATION_PATH = "./Model/model_h5/inflasi_model.h5"
-MODEL_KPR_PATH = "./Model/model_h5/kpr_model.h5"
+MODEL_HOUSE_PATH = "./Model/model_H5/house_fix.h5"
+MODEL_INFLATION_PATH = "./Model/model_H5/inflasi_model.h5"
+MODEL_KPR_PATH = "./Model/model_H5/kpr_model.h5"
 SCALE_NUM_PATH = "./Mappings/scale_num.pkl"
 X_CAT_COLUMNS_PATH = "./Mappings/X_cat_columns.pkl"
 SCALER_INFLATION_PATH = "./Mappings/scaler.pkl"

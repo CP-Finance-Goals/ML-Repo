@@ -18,6 +18,11 @@
             margin-top: 20px;
             color: #333;
         }
+        #lottieAnimation {
+            width: 300px;
+            height: 300px;
+            margin-top: 20px;
+        }
         form {
             background: #fff;
             padding: 20px;
@@ -75,9 +80,11 @@
             font-weight: bold;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.12/lottie.min.js"></script>
 </head>
 <body>
     <h1>Prediksi Harga Rumah</h1>
+    <div id="lottieAnimation"></div>
     <form id="predictionForm">
         <div class="form-group">
             <label for="city">Kota</label>
@@ -133,6 +140,15 @@
         const form = document.getElementById('predictionForm');
         const resultDiv = document.getElementById('result');
         const errorDiv = document.getElementById('error');
+
+        // Load Lottie Animation
+        const lottieAnimation = lottie.loadAnimation({
+            container: document.getElementById('lottieAnimation'), // the DOM element
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: 'static/reit.json' // Path to your Lottie JSON file
+        });
 
         form.addEventListener('submit', async (event) => {
             event.preventDefault();

@@ -11,14 +11,14 @@ app = Flask(__name__)
 CORS(app)
 
 # Path untuk file model dan scaler
-MODEL_HOUSE_PATH = "house_fix (1).h5"
-MODEL_INFLATION_PATH = "inflasi_model.h5"
-MODEL_KPR_PATH = "kpr_model.h5"
-SCALE_NUM_PATH = "scale_num.pkl"
-X_CAT_COLUMNS_PATH = "X_cat_columns.pkl"
-SCALER_INFLATION_PATH = "scaler.pkl"
-SCALER_X_PATH = "scaler_X.pkl"
-SCALER_Y_PATH = "scaler_y.pkl"
+MODEL_HOUSE_PATH = "./Model/model_h5/house_fix.h5"
+MODEL_INFLATION_PATH = "./Model/model_h5/inflasi_model.h5"
+MODEL_KPR_PATH = "./Model/model_h5/kpr_model.h5"
+SCALE_NUM_PATH = "./Mappings/scale_num.pkl"
+X_CAT_COLUMNS_PATH = "./Mappings/X_cat_columns.pkl"
+SCALER_INFLATION_PATH = "./Mappings/scaler.pkl"
+SCALER_X_PATH = "./Mappings/scaler_X.pkl"
+SCALER_Y_PATH = "./Mappings/scaler_y.pkl"
 
 # Constants for house price transformation
 Y_MEAN = 2575015770.205576

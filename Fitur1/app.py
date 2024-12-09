@@ -61,7 +61,7 @@ scaler_y = joblib.load(SCALER_Y_PATH)
 # Fungsi untuk prediksi harga rumah
 def predict_house_price(user_input):
     data_baru = pd.DataFrame({
-        'city': [user_input['city']],
+        'city': [user_input['city'].lower()],
         'bedrooms': [user_input['bedrooms']],
         'bathrooms': [user_input['bathrooms']],
         'land_size_m2': [user_input['land_size_m2']],

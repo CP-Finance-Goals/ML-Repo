@@ -33,8 +33,8 @@ The machine learning models are deployed using **Cloud Run**, allowing for scala
 
 * [API FITUR 1] (https://fiturhouse-35695338676.asia-southeast2.run.app/)
   - `/predict`  
-  House price prediction 
-  Method : POST  
+House price prediction
+  Method : POST   
   Input :
 
   ```bash

@@ -46,7 +46,8 @@ The machine learning models are deployed using **Cloud Run**, allowing for scala
         "building_size_m2" : "integer",
         "electricity" : "integer",
         "maid_bedrooms" : "integer",
-        "floors" : "integer"
+        "floors" : "integer",
+        "target_years" : "integer"
       }
   ```
 * [API FITUR 2] (https://catagorypredict-35695338676.asia-southeast2.run.app/)

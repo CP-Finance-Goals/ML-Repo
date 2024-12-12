@@ -32,9 +32,9 @@ The Jupyter notebooks in the `notebooks/` directory provide detailed steps for:
 The machine learning models are deployed using **Cloud Run**, allowing for scalable and efficient serving of predictions.
 
 * [API FITUR 1] (https://fiturhouse-35695338676.asia-southeast2.run.app/)
-  - `/predict`  
-House price prediction
-  Method : POST   
+    - `/predict`  
+House price prediction  
+  Method : POST  
   Input :
 
   ```bash
@@ -42,14 +42,15 @@ House price prediction
         "city" : "string",
         "bedrooms" : "integer",
         "bathrooms": "integer",
-        "land_size_m2" : "integer",
-        "building_size_m2" : "integer",
+        "land_size_m2" : "float",
+        "building_size_m2" : "float",
         "electricity" : "integer",
         "maid_bedrooms" : "integer",
         "floors" : "integer",
         "target_years" : "integer"
       }
   ```
+  
 * [API FITUR 2] (https://catagorypredict-35695338676.asia-southeast2.run.app/)
     - `/recommend`  
 Product category price prediction  

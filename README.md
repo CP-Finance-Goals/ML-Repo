@@ -31,8 +31,8 @@ The Jupyter notebooks in the `notebooks/` directory provide detailed steps for:
 
 The machine learning models are deployed using **Cloud Run**, allowing for scalable and efficient serving of predictions.
 
-* [API FITUR 1](https://fiturhouse-35695338676.asia-southeast2.run.app)
-* [API FITUR 2](https://catagorypredict-35695338676.asia-southeast2.run.app/)
+* [API FITUR 1] [POST] (https://fiturhouse-35695338676.asia-southeast2.run.app/predict)
+* [API FITUR 2] [POST] (https://catagorypredict-35695338676.asia-southeast2.run.app/recommend)
 
 ## Technologies Used
 

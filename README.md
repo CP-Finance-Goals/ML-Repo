@@ -60,7 +60,7 @@ Product category price prediction
   ```bash
       {
         "catagory" : "string",
-        "budget" : "integer"
+        "budget" : "float"
       }
   ```
 
